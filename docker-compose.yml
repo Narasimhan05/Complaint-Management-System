@@ -1,0 +1,110 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Docker Compose for Complaint Management System
+#
+# Services:
+#   mysql    → database (port 3307 on host to avoid conflict with local MySQL)
+#   backend  → Spring Boot API (port 8080)
+#   frontend → React served by nginx (port 3000)
+#
+# Run:  docker-compose up --build
+# Stop: docker-compose down
+# Full reset (delete data): docker-compose down -v
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── MySQL Database ───────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: cms_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE:      complaint_db
+      MYSQL_USER:          complaint_user
+      MYSQL_PASSWORD:      Admin@1234
+    ports:
+      - "3307:3306"       # host 3307 → container 3306 (avoids local MySQL conflict)
+    volumes:
+      - mysql_data:/var/lib/mysql   # data survives container restarts
+    networks:
+      - cms_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout:  5s
+      retries:  8
+      start_period: 30s
+
+  # ── Spring Boot Backend ──────────────────────────────────────────────────
+  backend:
+    build:
+      context:    ./backend
+      dockerfile: Dockerfile
+    container_name: cms_backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Override application.properties values for Docker environment
+      SPRING_DATASOURCE_URL:      jdbc:mysql://mysql:3306/complaint_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: complaint_user
+      SPRING_DATASOURCE_PASSWORD: Admin@1234
+
+      # JWT
+      APP_JWT_SECRET:     ComplaintMgmtSuperSecretKey2024ForHMACSHA256MustBe256BitsMinimum!
+      APP_JWT_EXPIRATION: 86400000
+
+      # CORS — allow both localhost:3000 and the nginx container
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:3000
+
+      # Mail simulation (no real emails in Docker)
+      APP_MAIL_SIMULATE: "true"
+
+      # SLA: 48 hours
+      APP_SLA_ESCALATION_HOURS: 48
+
+      # JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL:           "false"   # disable in Docker (too noisy)
+
+    depends_on:
+      mysql:
+        condition: service_healthy   # wait until MySQL healthcheck passes
+
+    networks:
+      - cms_network
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:8080/api-docs > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout:  10s
+      retries:  5
+      start_period: 60s   # Spring Boot needs time to start
+
+  # ── React Frontend ───────────────────────────────────────────────────────
+  frontend:
+    build:
+      context:    ./frontend
+      dockerfile: Dockerfile
+    container_name: cms_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"          # nginx runs on port 80 inside container
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - cms_network
+
+# ── Named volume for MySQL data persistence ──────────────────────────────────
+volumes:
+  mysql_data:
+    driver: local
+
+# ── Internal network so containers can reach each other by service name ───────
+networks:
+  cms_network:
+    driver: bridge

@@ -1,0 +1,8 @@
+{
+  "short_name": "CMS",
+  "name": "Complaint Management System",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1e3a5f",
+  "background_color": "#ffffff"
+}

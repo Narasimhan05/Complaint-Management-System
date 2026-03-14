@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #f8f9fc;
+  --bg-card:      #ffffff;
+  --bg-subtle:    #f1f4f9;
+  --border:       #e2e8f0;
+  --border-dark:  #cbd5e1;
+  --navy:         #0f2444;
+  --navy-mid:     #1e3a5f;
+  --blue:         #2563eb;
+  --blue-light:   #eff6ff;
+  --green:        #059669;
+  --green-light:  #ecfdf5;
+  --amber:        #d97706;
+  --amber-light:  #fffbeb;
+  --red:          #dc2626;
+  --red-light:    #fef2f2;
+  --purple:       #7c3aed;
+  --purple-light: #f5f3ff;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-xl:  0 24px 64px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06);
+  --font-display: 'Playfair Display', serif;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  18px;
+  --radius-xl:  24px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 8px; }
+
+input, select, textarea {
+  font-family: var(--font-body);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+input::placeholder, textarea::placeholder { color: var(--text-muted); }
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+select option { background: #fff; color: var(--text-primary); }
+button { font-family: var(--font-body); cursor: pointer; transition: all 0.2s; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button:not(:disabled):active { transform: scale(0.98); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes spin   { to{transform:rotate(360deg)} }
